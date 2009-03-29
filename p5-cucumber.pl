@@ -5,6 +5,8 @@ use warnings;
 use strict;
 use lib 'lib';
 use Test::More 'no_plan';
+use Test::Cucumber::StepCollection;
+use Test::Cucumber::Step;
 
 use Parser;
 
@@ -30,49 +32,39 @@ EOF
 
 # empty hash to hold match strings/regexp and
 # anonymous functions created by Given/When/Then
-my %matchers;
+my $step_definitions = Test::Cucumber::StepCollection->new;
 
 sub execute_match($) {
   my $line = shift;
   # match regexps in %matchers against subgroups
   # and call the callback function
-  foreach my $regexp (keys %matchers) {
-    if (my @subgroups = ($line =~ $regexp)) {
-      $matchers{$regexp}->(@subgroups);
-      last;
-    }
-  }
+
+  $step_definitions->run($line);
 }
 
 # creator of matchers, commonly known as StoreMatcher
 # but abbreviated into just 'sm'
-sub sm($&) {
-  my ($regexp, $callback) = @_;
-  $matchers{$regexp} = $callback;
+
+sub sm {
+  $step_definitions->add(shift)
 }
 sub Given($;&) {
-  if (ref($_[0]) eq "Regexp") {
-    my ($regexp, $callback) = @_;
-    $regexp = qr{Given $regexp};
-    sm($regexp,\&$callback);
+  if (ref($_[0]) eq "Regexp")  {
+      sm(Test::Cucumber::Step->given(@_))
   } else {
     execute_match("Given ".$_[0]);
   }
 }
 sub When($;&) {
   if (ref($_[0]) eq "Regexp") {
-    my ($regexp, $callback) = @_;
-    $regexp = qr{When $regexp};
-    sm($regexp,\&$callback);
+      sm(Test::Cucumber::Step->when(@_));
   } else {
     execute_match("When ".$_[0]);
   }
 }
 sub Then($;&) {
   if (ref($_[0]) eq "Regexp") {
-    my ($regexp, $callback) = @_;
-    $regexp = qr{Then $regexp};
-    sm($regexp,\&$callback);
+      sm(Test::Cucumber::Step->then(@_));
   } else {
     execute_match("Then ".$_[0]);
   }
@@ -87,32 +79,32 @@ my %state;
 # the code behind the story
 #
 Given qr/(.*) in (.*)/, sub {
-  my ($description,$location) = @_;
-  $state{human} = $description;
-  $state{location} = $location;
+    my ($description,$location) = @_;
+    $state{human} = $description;
+    $state{location} = $location;
 };
 
 When qr/s?he ate (.*)/, sub {
-  my $item = shift;
-  if ($item eq 'a mushroom') {
-    $state{human} =~ s/live/dead/;
-  }
+    my $item = shift;
+    if ($item eq 'a mushroom') {
+        $state{human} =~ s/live/dead/;
+    }
 };
 
 Then qr/was (.*)/, sub {
-  my ($description) = @_;
-  is($state{human},$description,$description);
+    my ($description) = @_;
+    is($state{human},$description,$description);
 };
 
 Then qr/in (.*)/, sub {
-  my ($location) = @_;
-  is($state{location},$location,$location);
+    my ($location) = @_;
+    is($state{location},$location,$location);
 };
 
 Then qr/s?he was (.*) in (.*)/, sub {
-  my ($description,$location) = @_;
-  Then "was $description";
-  Then "in $location";
+    my ($description,$location) = @_;
+    Then "was $description";
+    Then "in $location";
 };
 
 #
