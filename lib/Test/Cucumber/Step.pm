@@ -5,6 +5,7 @@ class Test::Cucumber::Step {
     
     has matcher => (is => 'ro', isa => 'RegexpRef');
     has handler => (is => 'ro', isa => 'CodeRef');
+    has plan    => (is => 'ro', isa => 'Int');
 
     method when (ClassName $class: Str|RegexpRef $matcher, CodeRef $handler) {
         $class->new(
@@ -14,7 +15,7 @@ class Test::Cucumber::Step {
     }
 
     method matches ($line) {
-        $line ~~ $self->matcher;
+        $line =~$self->matcher;
     }
 
     method run ($line) {
@@ -22,5 +23,4 @@ class Test::Cucumber::Step {
         croak "'$line' did not match qr{'", $self->matcher, "'" unless @args;
         $self->handler->(@args);
     }
-    
 }
