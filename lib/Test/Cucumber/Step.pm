@@ -7,10 +7,11 @@ class Test::Cucumber::Step {
     has handler => (is => 'ro', isa => 'CodeRef');
     has plan    => (is => 'ro', isa => 'Int');
 
-    method when (ClassName $class: Str|RegexpRef $matcher, CodeRef $handler) {
+    method then (ClassName $class: Str|RegexpRef $matcher, CodeRef $handler, $plan = 1) {
         $class->new(
-            matcher => qr{^When ${matcher}$},
+            matcher => qr{^Then ${matcher}$},
             handler => $handler,
+            plan    => $plan,
         );
     }
 
