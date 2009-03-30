@@ -3,4 +3,4 @@
 .settings
 *.launch
 parser/*.output
-lib/Parser.pm
+lib/Test/Cucumber/Parser.pm

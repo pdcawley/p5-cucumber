@@ -2,8 +2,8 @@
 
 : ${BASEDIR:=`dirname $0`}
 : ${GRAMMAR:="$BASEDIR/Parser.yp"}
-: ${OUTPUT:="$BASEDIR/../lib/Parser.pm"}
-: ${PKGNAME:="Parser"}
+: ${OUTPUT:="$BASEDIR/../lib/Test/Cucumber/Parser.pm"}
+: ${PKGNAME:="Test::Cucumber::Parser"}
 
 echo "Compiling parser grammar (${GRAMMAR} -> ${OUTPUT})"
 
