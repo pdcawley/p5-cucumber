@@ -7,8 +7,9 @@ use lib 'lib';
 use Test::More 'no_plan';
 use Test::Cucumber::StepCollection;
 use Test::Cucumber::Step;
+use Test::Cucumber::Runner::State;
 
-use Parser;
+use Test::Cucumber::Parser;
 
 my $story = <<EOF
 Feature: Dealing with mushrooms
@@ -34,12 +35,12 @@ EOF
 # anonymous functions created by Given/When/Then
 my $step_definitions = Test::Cucumber::StepCollection->new;
 
-sub execute_match($) {
-  my $line = shift;
+sub execute_match {
+  my($line, $state) = @_;
   # match regexps in %matchers against subgroups
   # and call the callback function
 
-  $step_definitions->run($line);
+  $step_definitions->run($line, $state);
 }
 
 # creator of matchers, commonly known as StoreMatcher
@@ -110,19 +111,22 @@ Then qr/s?he was (.*) in (.*)/, sub {
 #
 # THE engine!
 #
-my $parser = new Parser();
+
+
+my $parser = Test::Cucumber::Parser->new();
 my ($result,$tree) = $parser->parse($story);
 
 for my $feature ($tree->features) {
 	print "Feature: ",$feature->name,"\n";
 	print $feature->header;
 	for my $scenario ($feature->scenarios) {
+        my $runstate = Test::Cucumber::Runner::State->new;
 		print "\n";
 		print "  Tags: ",join(',',$scenario->tags),"\n";
 		print "  Scenario: ",$scenario->name,"\n";
 		for my $step ($scenario->steps) {
 			print "    $step\n";
-			execute_match($step);
+			execute_match($step, $runstate);
 		}
 	}
 }
